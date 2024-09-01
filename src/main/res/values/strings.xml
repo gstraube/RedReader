@@ -1988,4 +1988,8 @@
 	<string name="accessibility_inbox_unread">Unread</string>
 	<!-- Translators: spoken by the screen reader for an inbox message that has been read. -->
 	<string name="accessibility_inbox_read">Read</string>
+
+	<string name="locked">LOCKED</string>
+	<string name="pref_appearance_post_subtitle_items_locked">Locked tag</string>
+	<string name="accessibility_subtitle_lockedpost">Locked post.</string>
 </resources>

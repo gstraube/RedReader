@@ -624,12 +624,21 @@ public class MainActivity extends RefreshableActivity
 
 			final FrameLayout postContainer = isMenuShown ? mRightPane : mLeftPane;
 
-			if(isMenuShown && (which == RefreshableFragment.ALL
-					|| which == RefreshableFragment.MAIN)) {
-				mainMenuFragment = new MainMenuFragment(this, null, force);
-				mainMenuView = mainMenuFragment.createCombinedListingAndOverlayView();
-				mLeftPane.removeAllViews();
-				mLeftPane.addView(mainMenuView);
+			if(which == RefreshableFragment.ALL || which == RefreshableFragment.MAIN) {
+
+				if(isMenuShown) {
+					mainMenuFragment = new MainMenuFragment(this, null, force);
+					mainMenuView = mainMenuFragment.createCombinedListingAndOverlayView();
+					mLeftPane.removeAllViews();
+					mLeftPane.addView(mainMenuView);
+
+				} else {
+					// The menu is hidden behind the post/comment panes. Discard the
+					// retained instance so that it is rebuilt fresh when the user
+					// presses back, rather than reappearing with stale contents.
+					mainMenuFragment = null;
+					mainMenuView = null;
+				}
 			}
 
 			if(postListingController != null && (which == RefreshableFragment.ALL
@@ -677,11 +686,12 @@ public class MainActivity extends RefreshableActivity
 
 		isMenuShown = true;
 
-		mainMenuFragment = new MainMenuFragment(
-				this,
-				null,
-				false); // TODO preserve position
-		mainMenuView = mainMenuFragment.createCombinedListingAndOverlayView();
+		// Reuse the retained menu (preserving its scroll position and list
+		// contents) if we still have it, otherwise build a new one.
+		if(mainMenuFragment == null || mainMenuView == null) {
+			mainMenuFragment = new MainMenuFragment(this, null, false);
+			mainMenuView = mainMenuFragment.createCombinedListingAndOverlayView();
+		}
 
 		commentListingFragment = null;
 		commentListingView = null;
@@ -719,8 +729,8 @@ public class MainActivity extends RefreshableActivity
 				mLeftPane.addView(postListingView);
 				mRightPane.addView(commentListingView);
 
-				mainMenuFragment = null;
-				mainMenuView = null;
+				// mainMenuFragment and mainMenuView are intentionally retained
+				// (detached from mLeftPane) so their state can be restored on back.
 
 				isMenuShown = false;
 

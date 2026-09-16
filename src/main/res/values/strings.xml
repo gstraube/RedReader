@@ -1992,4 +1992,8 @@
 	<string name="locked">LOCKED</string>
 	<string name="pref_appearance_post_subtitle_items_locked">Locked tag</string>
 	<string name="accessibility_subtitle_lockedpost">Locked post.</string>
+
+	<!-- 2026-09-16 -->
+	<!-- Translators: shown under the side-toolbar swipe zone setting when it is disabled because Android's gesture navigation is in use -->
+	<string name="pref_behaviour_bezel_toolbar_swipezone_gesture_nav_summary">Not available with Android gesture navigation</string>
 </resources>

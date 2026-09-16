@@ -42,6 +42,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.quantumbadger.redreader.BuildConfig
 import org.quantumbadger.redreader.R
@@ -243,6 +244,26 @@ object General {
 
 		AppearanceTwopane.NEVER -> false
 		AppearanceTwopane.FORCE -> true
+	}
+
+	/**
+	 * True if the system reserves the left or right screen edges for its own
+	 * gestures, i.e. Android 10+ gesture navigation is enabled. The view must
+	 * be attached to a window, otherwise this returns false.
+	 */
+	@JvmStatic
+	fun isGestureNavigationEnabled(view: View): Boolean {
+
+		val insets = ViewCompat.getRootWindowInsets(view) ?: return false
+
+		val gestures = insets.getInsets(WindowInsetsCompat.Type.systemGestures())
+
+		// With 3-button navigation in landscape, the nav bar itself may sit on
+		// the left or right, and is included in the system gesture insets.
+		// Only count edge area beyond the system bars as a gesture zone.
+		val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+		return gestures.left > bars.left || gestures.right > bars.right
 	}
 
     @Suppress("DEPRECATION")

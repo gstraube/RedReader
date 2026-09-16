@@ -2,6 +2,7 @@
 Show "Locked" tag for locked posts (thanks to folkemat)
 Fix for back button causing a main menu reload in two-column mode
 Disable the bezel swipe toolbar when Android gesture navigation is enabled
+Extend content to the bottom of the screen under the nav bar
 
 /Alpha 372 (2026-09-15)
 Inbox improvements and ability to mark messages as read

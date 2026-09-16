@@ -109,6 +109,8 @@ public class ImageViewDisplayListManager implements
 
 	private ImageViewScrollbars mScrollbars;
 
+	private int mBottomInset;
+
 	private float mScreenDensity = 1;
 
 	public ImageViewDisplayListManager(
@@ -192,7 +194,32 @@ public class ImageViewDisplayListManager implements
 				mImageTileSource.getHeight()
 		);
 
+		mScrollbars.setBottomInset(mBottomInset);
+
 		scene.add(mScrollbars);
+	}
+
+	/**
+	 * Sets the height of the navigation bar (or gesture handle) drawn over
+	 * the bottom of the surface, so that the scrollbars are kept clear of it,
+	 * and the image is fitted to and kept within the area above it.
+	 */
+	public synchronized void setBottomInset(final int bottomInset) {
+
+		mBottomInset = bottomInset;
+
+		if(mScrollbars != null) {
+			mScrollbars.setBottomInset(bottomInset);
+			mScrollbars.showBars();
+		}
+
+		if(mBoundsHelper != null) {
+			mBoundsHelper = new BoundsHelper(
+					mResolutionX, mResolutionY,
+					mBottomInset,
+					mImageTileSource.getWidth(), mImageTileSource.getHeight(),
+					mCoordinateHelper);
+		}
 	}
 
 	@Override
@@ -209,6 +236,7 @@ public class ImageViewDisplayListManager implements
 
 		mBoundsHelper = new BoundsHelper(
 				width, height,
+				mBottomInset,
 				mImageTileSource.getWidth(), mImageTileSource.getHeight(),
 				mCoordinateHelper);
 
@@ -419,7 +447,7 @@ public class ImageViewDisplayListManager implements
 			case DOUBLE_TAP_ONE_FINGER_DRAG: {
 
 				final MutableFloatPoint2D screenCentre = mTmpPoint1_onFingersMoved;
-				screenCentre.set(mResolutionX / 2, mResolutionY / 2);
+				screenCentre.set(mResolutionX / 2, (mResolutionY - mBottomInset) / 2);
 
 				mCoordinateHelper.scaleAboutScreenPoint(
 						screenCentre,
@@ -571,9 +599,11 @@ public class ImageViewDisplayListManager implements
 			targetScale = minScale;
 
 		} else {
+			// Fill the area not covered by the navigation bar along one axis
 			targetScale = Math.max(
 					(float)mResolutionX / (float)mImageTileSource.getWidth(),
-					(float)mResolutionY / (float)mImageTileSource.getHeight()
+					(float)(mResolutionY - mBottomInset)
+							/ (float)mImageTileSource.getHeight()
 			);
 
 			if(Math.abs((targetScale / currentScale) - 1.0) < 0.05) {

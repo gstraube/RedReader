@@ -97,6 +97,10 @@ public final class SettingsFragment extends PreferenceFragmentCompat {
 
 		super.onViewCreated(view, savedInstanceState);
 
+		// The preference list extends behind the navigation bar (see
+		// SettingsActivity), so keep the last preference clear of it
+		General.applyNavigationBarBottomPadding(getListView());
+
 		final ListPreference swipeZonePref = findPreference(getString(
 				R.string.pref_behaviour_bezel_toolbar_swipezone_key));
 

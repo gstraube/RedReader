@@ -55,6 +55,11 @@ public class ImageViewScrollbars extends RRGLRenderable {
 
 	private int mResX;
 	private int mResY;
+
+	// Height of the navigation bar (or gesture handle) drawn over the bottom
+	// of the surface, which the bars are kept clear of
+	private int mBottomInset;
+
 	private final int mImageResX;
 	private final int mImageResY;
 
@@ -166,6 +171,9 @@ public class ImageViewScrollbars extends RRGLRenderable {
 		final float xEnd = tmp2.x / (float)mImageResX;
 		final float yEnd = tmp2.y / (float)mImageResY;
 
+		// The bottom edge of the area available for the bars
+		final int barsBottom = mResY - mBottomInset;
+
 		// Vertical scroll bar
 
 		if(yStart < EPSILON && yEnd > 1 - EPSILON) {
@@ -174,7 +182,7 @@ public class ImageViewScrollbars extends RRGLRenderable {
 		} else {
 			mVScroll.show();
 
-			final float vScrollTotalHeight = mResY - 2 * mDimMarginEnds;
+			final float vScrollTotalHeight = barsBottom - 2 * mDimMarginEnds;
 
 			final float vScrollHeight = (yEnd - yStart) * vScrollTotalHeight;
 			final float vScrollTop = yStart * vScrollTotalHeight + mDimMarginEnds;
@@ -206,7 +214,7 @@ public class ImageViewScrollbars extends RRGLRenderable {
 
 			final float hScrollWidth = (xEnd - xStart) * hScrollTotalWidth;
 			final float hScrollLeft = xStart * hScrollTotalWidth + mDimMarginEnds;
-			final float hScrollTop = mResY - mDimBarWidth - mDimMarginSides;
+			final float hScrollTop = barsBottom - mDimBarWidth - mDimMarginSides;
 
 			mHScrollBorderTranslation.setPosition(
 					mDimMarginEnds - mDimBorderWidth,
@@ -226,6 +234,10 @@ public class ImageViewScrollbars extends RRGLRenderable {
 	public synchronized void setResolution(final int x, final int y) {
 		mResX = x;
 		mResY = y;
+	}
+
+	public synchronized void setBottomInset(final int bottomInset) {
+		mBottomInset = bottomInset;
 	}
 
 	@Override

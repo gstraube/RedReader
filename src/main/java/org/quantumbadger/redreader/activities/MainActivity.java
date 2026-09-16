@@ -135,6 +135,11 @@ public class MainActivity extends RefreshableActivity
 	}
 
 	@Override
+	protected boolean baseActivityContentExtendsBehindNavigationBar() {
+		return true;
+	}
+
+	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 
 		PrefsUtility.applyTheme(this);

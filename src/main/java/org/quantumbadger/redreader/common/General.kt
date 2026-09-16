@@ -40,6 +40,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import androidx.core.util.Consumer
 import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -48,6 +49,7 @@ import org.quantumbadger.redreader.BuildConfig
 import org.quantumbadger.redreader.R
 import org.quantumbadger.redreader.cache.CacheRequest.RequestFailureType
 import org.quantumbadger.redreader.common.AndroidCommon.runOnUiThread
+import org.quantumbadger.redreader.common.General.applyNavigationBarBottomPadding
 import org.quantumbadger.redreader.common.PrefsUtility.AppearanceTwopane
 import org.quantumbadger.redreader.fragments.AccountListDialog
 import org.quantumbadger.redreader.fragments.ErrorPropertiesDialog
@@ -264,6 +266,95 @@ object General {
 		val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
 		return gestures.left > bars.left || gestures.right > bars.right
+	}
+
+	/**
+	 * Pads the bottom of [view] by the navigation bar inset, keeping its
+	 * content clear of the bar while the view itself extends behind it. For
+	 * a ViewGroup, clipToPadding is disabled so that scrolling content is
+	 * drawn behind the bar. Only has an effect where the enclosing
+	 * ViewsBaseActivity passes the inset down -- see
+	 * ViewsBaseActivity.baseActivityContentExtendsBehindNavigationBar().
+	 */
+	@JvmStatic
+	fun applyNavigationBarBottomPadding(view: View) {
+
+		val basePaddingBottom = view.paddingBottom
+
+		if (view is ViewGroup) {
+			view.clipToPadding = false
+		}
+
+		onNavigationBarBottomInset(view) { navBarBottom ->
+			view.setPadding(
+				view.paddingLeft,
+				view.paddingTop,
+				view.paddingRight,
+				basePaddingBottom + navBarBottom
+			)
+		}
+	}
+
+	/**
+	 * Calls [callback] with the navigation bar's bottom inset whenever insets
+	 * are dispatched to [view], for views which extend behind the bar and
+	 * need to position their own contents clear of it. See
+	 * [applyNavigationBarBottomPadding].
+	 */
+	@JvmStatic
+	fun onNavigationBarBottomInset(view: View, callback: Consumer<Int>) {
+
+		requestApplyInsetsWhenAttached(view)
+
+		ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
+			callback.accept(insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom)
+			insets
+		}
+	}
+
+	/**
+	 * Insets are only dispatched when the window requests them, so a view
+	 * added to an already laid-out window (e.g. a pane in two-column mode,
+	 * filled in when the user selects a post) would otherwise never receive
+	 * them. This requests a dispatch each time the view is attached.
+	 */
+	private fun requestApplyInsetsWhenAttached(view: View) {
+
+		if (view.isAttachedToWindow) {
+			ViewCompat.requestApplyInsets(view)
+		}
+
+		view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+
+			override fun onViewAttachedToWindow(v: View) {
+				ViewCompat.requestApplyInsets(v)
+			}
+
+			override fun onViewDetachedFromWindow(v: View) {
+				// Nothing to do
+			}
+		})
+	}
+
+	/**
+	 * Adds the navigation bar inset to the bottom margin of [view], for views
+	 * anchored to the bottom of a container which extends behind the bar.
+	 * See [applyNavigationBarBottomPadding].
+	 */
+	@JvmStatic
+	fun applyNavigationBarBottomMargin(view: View) {
+
+		val baseMarginBottom = (view.layoutParams as MarginLayoutParams).bottomMargin
+
+		onNavigationBarBottomInset(view) { navBarBottom ->
+
+			val params = view.layoutParams as MarginLayoutParams
+
+			if (params.bottomMargin != baseMarginBottom + navBarBottom) {
+				params.bottomMargin = baseMarginBottom + navBarBottom
+				view.layoutParams = params
+			}
+		}
 	}
 
     @Suppress("DEPRECATION")

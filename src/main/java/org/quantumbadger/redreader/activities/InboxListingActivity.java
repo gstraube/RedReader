@@ -174,6 +174,11 @@ public final class InboxListingActivity extends ViewsBaseActivity {
 	// TODO load more on scroll to bottom?
 
 	@Override
+	protected boolean baseActivityContentExtendsBehindNavigationBar() {
+		return true;
+	}
+
+	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 
 		PrefsUtility.applyTheme(this);

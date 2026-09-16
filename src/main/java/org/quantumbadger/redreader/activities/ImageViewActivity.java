@@ -159,6 +159,11 @@ public class ImageViewActivity extends ViewsBaseActivity
 	}
 
 	@Override
+	protected boolean baseActivityContentExtendsBehindNavigationBar() {
+		return true;
+	}
+
+	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
@@ -370,6 +375,10 @@ public class ImageViewActivity extends ViewsBaseActivity
 				toolBarParams.gravity = Gravity.START | Gravity.BOTTOM;
 				mFloatingToolbar.setLayoutParams(toolBarParams);
 			}
+
+			// The image extends behind the navigation bar, so keep the
+			// toolbar clear of it
+			General.applyNavigationBarBottomMargin(mFloatingToolbar);
 
 			outerFrame.addView(mFloatingToolbar);
 
@@ -1345,6 +1354,14 @@ public class ImageViewActivity extends ViewsBaseActivity
 					= new ImageViewDisplayListManager(imageTileSource, this);
 			surfaceView = new RRGLSurfaceView(this, mImageViewDisplayerManager);
 			setMainView(surfaceView);
+
+			// The surface extends behind the navigation bar, so keep the
+			// scrollbars clear of it
+			final ImageViewDisplayListManager displayListManager
+					= mImageViewDisplayerManager;
+			General.onNavigationBarBottomInset(
+					surfaceView,
+					displayListManager::setBottomInset);
 
 			if(mIsPaused) {
 				surfaceView.onPause();

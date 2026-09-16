@@ -22,7 +22,11 @@ import org.quantumbadger.redreader.common.MutableFloatPoint2D;
 public class BoundsHelper {
 
 	private final int mResolutionX;
+
+	// The height of the area not covered by the navigation bar (or gesture
+	// handle), which the image is fitted to and kept within
 	private final int mResolutionY;
+
 	private final int mImageResolutionX;
 	private final int mImageResolutionY;
 	private final CoordinateHelper mCoordinateHelper;
@@ -31,11 +35,12 @@ public class BoundsHelper {
 
 	public BoundsHelper(
 			final int resolutionX, final int resolutionY,
+			final int bottomInset,
 			final int imageResolutionX, final int imageResolutionY,
 			final CoordinateHelper coordinateHelper) {
 
 		mResolutionX = resolutionX;
-		mResolutionY = resolutionY;
+		mResolutionY = resolutionY - bottomInset;
 		mImageResolutionX = imageResolutionX;
 		mImageResolutionY = imageResolutionY;
 		mCoordinateHelper = coordinateHelper;

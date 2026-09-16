@@ -19,6 +19,7 @@
 <resources>
 
 	<attr name="rrActionBarPopupThemeStyle" format="reference" />
+	<attr name="rrPopupBackgroundCol" format="color" />
 
     <attr name="rrListDividerCol" format="color" />
     <attr name="rrListHeaderTextCol" format="color" />

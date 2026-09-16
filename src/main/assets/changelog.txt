@@ -15,6 +15,7 @@ Fix for notification prompt being shown twice when logging in
 Fix for rare database crash when managing accounts
 Fixed crashes caused by system config changes while dialog is open
 Fixed crash when clicking reply too soon on a post
+Fix for popup menu theme not matching the rest of the app
 Workaround for most recent Reddit login page issues
 Dependency updates
 

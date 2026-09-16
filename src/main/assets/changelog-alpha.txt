@@ -1,3 +1,6 @@
+/Alpha 374
+Fix for popup menu theme not matching the rest of the app
+
 /Alpha 373 (2026-09-16)
 Show "Locked" tag for locked posts (thanks to folkemat)
 Fix for back button causing a main menu reload in two-column mode

@@ -172,6 +172,15 @@ public class MainActivity extends RefreshableActivity
 
 		RedditAccountManager.getInstance(this).addUpdateListener(this);
 
+		recreateSubscriptionListener();
+
+		// Inflate the layout before running any preference migrations below.
+		// Those migrations write to shared preferences, and the resulting
+		// change notification is delivered synchronously on the main thread,
+		// which triggers doRefresh(ALL). In two-pane mode that dereferences
+		// mLeftPane/mRightPane, which are only assigned by MAIN_RELAYOUT.
+		doRefresh(RefreshableFragment.MAIN_RELAYOUT, false, null);
+
 		final AndroidCommon.PackageInfo pInfo = RedReader.getInstance(this).getPackageInfo();
 
 		final int appVersion = pInfo.getVersionCode();
@@ -216,10 +225,6 @@ public class MainActivity extends RefreshableActivity
 		} else {
 			AndroidCommon.promptForNotificationPermission(this, null);
 		}
-
-		recreateSubscriptionListener();
-
-		doRefresh(RefreshableFragment.MAIN_RELAYOUT, false, null);
 
 		if(savedInstanceState == null
 				&& PrefsUtility.pref_behaviour_skiptofrontpage()) {

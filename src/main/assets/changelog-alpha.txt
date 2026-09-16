@@ -1,5 +1,6 @@
 /Alpha 374
 Fix for popup menu theme not matching the rest of the app
+Fixed crash when launching after an update on a tablet
 
 /Alpha 373 (2026-09-16)
 Show "Locked" tag for locked posts (thanks to folkemat)

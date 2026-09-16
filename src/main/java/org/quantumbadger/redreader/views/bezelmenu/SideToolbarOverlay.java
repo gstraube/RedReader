@@ -40,7 +40,7 @@ public class SideToolbarOverlay extends FrameLayout {
 
 		// The overlay extends behind the navigation bar, so keep the
 		// toolbar clear of it
-		General.applyNavigationBarBottomPadding(this);
+		General.applySystemBarPadding(this);
 	}
 
 	public void setContents(final View contents) {

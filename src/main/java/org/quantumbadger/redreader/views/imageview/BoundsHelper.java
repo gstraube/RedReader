@@ -23,9 +23,10 @@ public class BoundsHelper {
 
 	private final int mResolutionX;
 
-	// The height of the area not covered by the navigation bar (or gesture
+	// The area not covered by the status bar or navigation bar (or gesture
 	// handle), which the image is fitted to and kept within
-	private final int mResolutionY;
+	private final int mTopInset;
+	private final int mUsableHeight;
 
 	private final int mImageResolutionX;
 	private final int mImageResolutionY;
@@ -35,19 +36,20 @@ public class BoundsHelper {
 
 	public BoundsHelper(
 			final int resolutionX, final int resolutionY,
-			final int bottomInset,
+			final int topInset, final int bottomInset,
 			final int imageResolutionX, final int imageResolutionY,
 			final CoordinateHelper coordinateHelper) {
 
 		mResolutionX = resolutionX;
-		mResolutionY = resolutionY - bottomInset;
+		mTopInset = topInset;
+		mUsableHeight = resolutionY - topInset - bottomInset;
 		mImageResolutionX = imageResolutionX;
 		mImageResolutionY = imageResolutionY;
 		mCoordinateHelper = coordinateHelper;
 
 		mMinScale = Math.min(
 				(float)mResolutionX / (float)mImageResolutionX,
-				(float)mResolutionY / (float)mImageResolutionY
+				(float)mUsableHeight / (float)mImageResolutionY
 		);
 	}
 
@@ -80,13 +82,13 @@ public class BoundsHelper {
 			posOffset.x = mResolutionX - scaledImageWidth;
 		}
 
-		if(scaledImageHeight <= mResolutionY) {
-			posOffset.y = (mResolutionY - scaledImageHeight) / 2;
+		if(scaledImageHeight <= mUsableHeight) {
+			posOffset.y = mTopInset + (mUsableHeight - scaledImageHeight) / 2;
 
-		} else if(posOffset.y > 0) {
-			posOffset.y = 0;
-		} else if(posOffset.y < mResolutionY - scaledImageHeight) {
-			posOffset.y = mResolutionY - scaledImageHeight;
+		} else if(posOffset.y > mTopInset) {
+			posOffset.y = mTopInset;
+		} else if(posOffset.y < mTopInset + mUsableHeight - scaledImageHeight) {
+			posOffset.y = mTopInset + mUsableHeight - scaledImageHeight;
 		}
 	}
 

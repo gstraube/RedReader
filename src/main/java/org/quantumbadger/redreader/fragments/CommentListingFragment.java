@@ -205,7 +205,7 @@ public class CommentListingFragment extends RRFragment
 
 			// The overlay extends behind the navigation bar, so keep the
 			// toolbar clear of it
-			General.applyNavigationBarBottomMargin(mFloatingToolbar);
+			General.applySystemBarMargin(mFloatingToolbar);
 
 			// We need a container so that setVisible() doesn't mess with the Z-order
 			final FrameLayout floatingToolbarContainer = new FrameLayout(context);

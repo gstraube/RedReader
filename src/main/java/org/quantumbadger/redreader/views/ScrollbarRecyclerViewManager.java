@@ -56,8 +56,8 @@ public class ScrollbarRecyclerViewManager {
 
 		// The listing extends behind the navigation bar (see
 		// ViewsBaseActivity), so keep the last item and the scrollbar clear of it
-		General.applyNavigationBarBottomPadding(mRecyclerView);
-		General.applyNavigationBarBottomMargin(mScrollbarFrame);
+		General.applySystemBarPadding(mRecyclerView);
+		General.applySystemBarMargin(mScrollbarFrame);
 
 		final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
 		mRecyclerView.setLayoutManager(linearLayoutManager);

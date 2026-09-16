@@ -144,7 +144,7 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 	 * If true, the bottom navigation bar inset is passed down to the content
 	 * rather than being applied as a margin on the content as a whole, and
 	 * the activity is responsible for keeping its bottom-most views clear of
-	 * the bar (see General.applyNavigationBarBottomPadding()). Activities
+	 * the bar (see General.applySystemBarPadding()). Activities
 	 * whose bottom-most view scrolls (e.g. a listing) should return true, so
 	 * that the listing scrolls behind the bar.
 	 *
@@ -152,6 +152,18 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 	 * the toolbar takes the inset instead.
 	 */
 	protected boolean baseActivityContentExtendsBehindNavigationBar() {
+		return false;
+	}
+
+	/**
+	 * Whether the activity's content is laid out behind the status bar. If
+	 * true, the status bar is drawn over a translucent black scrim rather
+	 * than an opaque one, the status bar's top inset (including any display
+	 * cutout) is passed down to the content, and the activity is responsible
+	 * for keeping its top-most views clear of it (see
+	 * General.applySystemBarPadding()). Intended for media viewers.
+	 */
+	protected boolean baseActivityContentExtendsBehindStatusBar() {
 		return false;
 	}
 
@@ -301,15 +313,19 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 	/**
 	 * The window is laid out edge-to-edge, so the activity content is inset by
 	 * the window insets here, and the system bar areas are painted: the status
-	 * bar in the theme's colorPrimaryDark, and a 3-button navigation bar with
-	 * a translucent scrim tinted with baseActivityNavigationBarColour(), which
-	 * the content shows through. Nothing is drawn behind the gesture
-	 * navigation handle, which floats over the content.
+	 * bar in the theme's colorPrimaryDark (or a translucent black scrim if
+	 * baseActivityContentExtendsBehindStatusBar() is true), and a 3-button
+	 * navigation bar with a translucent scrim tinted with
+	 * baseActivityNavigationBarColour(), which the content shows through.
+	 * Nothing is drawn behind the gesture navigation handle, which floats
+	 * over the content.
 	 *
 	 * The bottom navigation bar inset is taken by whichever view touches the
 	 * bottom of the screen: the toolbar if it's at the bottom, otherwise the
 	 * content if baseActivityContentExtendsBehindNavigationBar() is true,
-	 * otherwise the content as a whole is inset here.
+	 * otherwise the content as a whole is inset here. Likewise the status
+	 * bar's top inset is passed to the content if
+	 * baseActivityContentExtendsBehindStatusBar() is true.
 	 */
 	// Window insets are physical coordinates, so the left/right scrims must
 	// stay on their physical edges regardless of layout direction
@@ -337,6 +353,10 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 		final int navBarScrimColour = ColorUtils.setAlphaComponent(
 				navBarColour,
 				navBarColourIsLight ? NAV_BAR_SCRIM_ALPHA_LIGHT : NAV_BAR_SCRIM_ALPHA_DARK);
+
+		// Drawn behind the status bar when the content extends behind it
+		final int statusBarScrimColour
+				= ColorUtils.setAlphaComponent(Color.BLACK, NAV_BAR_SCRIM_ALPHA_DARK);
 
 		if (Build.VERSION.SDK_INT >= 35) {
 			// This deprecated call draws nothing from SDK 35 onwards, but
@@ -373,6 +393,9 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 		final boolean contentExtendsBehindNavBar
 				= baseActivityContentExtendsBehindNavigationBar();
 
+		final boolean contentExtendsBehindStatusBar
+				= baseActivityContentExtendsBehindStatusBar();
+
 		final int bottomToolbarBaseHeight = bottomToolbar != null
 				? bottomToolbar.getLayoutParams().height
 				: 0;
@@ -404,7 +427,7 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 					= (FrameLayout.LayoutParams)content.getLayoutParams();
 			contentParams.setMargins(
 					bars.left,
-					bars.top,
+					contentExtendsBehindStatusBar ? 0 : bars.top,
 					bars.right,
 					Math.max(bars.bottom, imeBottom)
 							- (navBarInsetTakenBelow ? navBars.bottom : 0));
@@ -424,12 +447,26 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 						navBars.bottom);
 			}
 
-			// Areas which are pure display cutout (no bar drawn over them)
-			// are painted black, matching the old letterboxing behaviour
-			scrimTop.setBackgroundColor(
-					insets.isVisible(WindowInsetsCompat.Type.statusBars())
-							? statusBarColour
-							: Color.BLACK);
+			final boolean statusBarVisible
+					= insets.isVisible(WindowInsetsCompat.Type.statusBars());
+
+			final int scrimTopHeight;
+
+			if (contentExtendsBehindStatusBar) {
+				// The content shows through the scrim, and extends under any
+				// display cutout when the status bar is hidden
+				scrimTop.setBackgroundColor(statusBarScrimColour);
+				scrimTopHeight = statusBarVisible ? bars.top : 0;
+
+			} else {
+				// Areas which are pure display cutout (no bar drawn over
+				// them) are painted black, matching the old letterboxing
+				// behaviour
+				scrimTop.setBackgroundColor(
+						statusBarVisible ? statusBarColour : Color.BLACK);
+				scrimTopHeight = bars.top;
+			}
+
 			scrimLeft.setBackgroundColor(
 					navBars.left > 0 ? navBarColour : Color.BLACK);
 			scrimRight.setBackgroundColor(
@@ -445,7 +482,7 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 				scrimBottomHeight = cutout.bottom;
 			}
 
-			setScrimBounds(scrimTop, FrameLayout.LayoutParams.MATCH_PARENT, bars.top);
+			setScrimBounds(scrimTop, FrameLayout.LayoutParams.MATCH_PARENT, scrimTopHeight);
 			setScrimBounds(scrimBottom, FrameLayout.LayoutParams.MATCH_PARENT, scrimBottomHeight);
 			setScrimBounds(scrimLeft, bars.left, FrameLayout.LayoutParams.MATCH_PARENT);
 			setScrimBounds(scrimRight, bars.right, FrameLayout.LayoutParams.MATCH_PARENT);
@@ -459,14 +496,25 @@ public abstract class ViewsBaseActivity extends BaseActivity {
 			insetsController.setAppearanceLightNavigationBars(
 					barDrawnOverScrim ? navBarColourIsLight : isLightTheme);
 
-			if (contentExtendsBehindNavBar && bottomToolbar == null) {
-				// Everything but the nav bar's bottom inset has been handled
-				// here, so that's all that's passed down to the content
+			final boolean passNavBarInsetDown
+					= contentExtendsBehindNavBar && bottomToolbar == null;
+
+			if (passNavBarInsetDown || contentExtendsBehindStatusBar) {
+				// Only the insets the content extends behind are passed down,
+				// everything else having been handled here. The status bar's
+				// inset includes any display cutout, so that the content can
+				// keep clear of it even when the status bar is hidden.
 				return new WindowInsetsCompat.Builder(insets)
-						.setInsets(WindowInsetsCompat.Type.statusBars(), Insets.NONE)
+						.setInsets(
+								WindowInsetsCompat.Type.statusBars(),
+								contentExtendsBehindStatusBar
+										? Insets.of(0, bars.top, 0, 0)
+										: Insets.NONE)
 						.setInsets(
 								WindowInsetsCompat.Type.navigationBars(),
-								Insets.of(0, 0, 0, navBars.bottom))
+								passNavBarInsetDown
+										? Insets.of(0, 0, 0, navBars.bottom)
+										: Insets.NONE)
 						.setInsets(WindowInsetsCompat.Type.displayCutout(), Insets.NONE)
 						.setInsets(WindowInsetsCompat.Type.ime(), Insets.NONE)
 						.build();

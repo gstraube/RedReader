@@ -228,19 +228,28 @@ public class EdgeToEdgeInsetsTest {
 			final int navBarBottom,
 			final boolean threeButton) {
 
+		dispatchInsets(activity, navBarBottom, threeButton, true);
+	}
+
+	private static void dispatchInsets(
+			@NonNull final Activity activity,
+			final int navBarBottom,
+			final boolean threeButton,
+			final boolean statusBarVisible) {
+
 		final View decor = activity.getWindow().getDecorView();
 
 		final WindowInsetsCompat insets = new WindowInsetsCompat.Builder()
 				.setInsets(
 						WindowInsetsCompat.Type.statusBars(),
-						Insets.of(0, STATUS_BAR_HEIGHT, 0, 0))
+						Insets.of(0, statusBarVisible ? STATUS_BAR_HEIGHT : 0, 0, 0))
 				.setInsets(
 						WindowInsetsCompat.Type.navigationBars(),
 						Insets.of(0, 0, 0, navBarBottom))
 				.setInsets(
 						WindowInsetsCompat.Type.tappableElement(),
 						Insets.of(0, 0, 0, threeButton ? navBarBottom : 0))
-				.setVisible(WindowInsetsCompat.Type.statusBars(), true)
+				.setVisible(WindowInsetsCompat.Type.statusBars(), statusBarVisible)
 				.setVisible(WindowInsetsCompat.Type.navigationBars(), true)
 				.build();
 
@@ -486,5 +495,88 @@ public class EdgeToEdgeInsetsTest {
 				"Bottom scrim height should equal nav bar inset",
 				NAV_BAR_HEIGHT,
 				bottomScrim(root).getLayoutParams().height);
+	}
+
+	/**
+	 * A media-viewer-style activity, laying its content out behind both bars
+	 */
+	public static class ContentBehindBothBarsActivity extends ChangelogActivity {
+
+		@Override
+		protected boolean baseActivityContentExtendsBehindNavigationBar() {
+			return true;
+		}
+
+		@Override
+		protected boolean baseActivityContentExtendsBehindStatusBar() {
+			return true;
+		}
+	}
+
+	@Test
+	public void testContentBehindStatusBar() {
+
+		final ContentBehindBothBarsActivity activity
+				= Robolectric.buildActivity(ContentBehindBothBarsActivity.class)
+						.setup()
+						.get();
+
+		dispatchInsets(activity, NAV_BAR_HEIGHT, true);
+
+		final ViewGroup root = getScrimRoot(activity);
+
+		final ViewGroup.MarginLayoutParams contentParams
+				= (ViewGroup.MarginLayoutParams)root.getChildAt(0).getLayoutParams();
+
+		Assert.assertEquals("Content should extend behind the status bar", 0, contentParams.topMargin);
+		Assert.assertEquals("Content should extend behind the nav bar", 0, contentParams.bottomMargin);
+
+		Assert.assertEquals(
+				"Top scrim height should equal status bar inset",
+				STATUS_BAR_HEIGHT,
+				topScrim(root).getLayoutParams().height);
+
+		final int topScrimColour = ((ColorDrawable)topScrim(root).getBackground()).getColor();
+
+		Assert.assertEquals(
+				"Top scrim should be black",
+				Color.BLACK,
+				topScrimColour | 0xFF000000);
+
+		final int bottomScrimColour
+				= ((ColorDrawable)bottomScrim(root).getBackground()).getColor();
+
+		Assert.assertEquals(
+				"Top scrim should be as translucent as the dark nav bar scrim",
+				Color.alpha(bottomScrimColour),
+				Color.alpha(topScrimColour));
+
+		Assert.assertTrue(
+				"Top scrim should be translucent",
+				Color.alpha(topScrimColour) > 0 && Color.alpha(topScrimColour) < 0xFF);
+	}
+
+	@Test
+	public void testContentBehindHiddenStatusBar() {
+
+		final ContentBehindBothBarsActivity activity
+				= Robolectric.buildActivity(ContentBehindBothBarsActivity.class)
+						.setup()
+						.get();
+
+		dispatchInsets(activity, NAV_BAR_HEIGHT, true, false);
+
+		final ViewGroup root = getScrimRoot(activity);
+
+		Assert.assertEquals(
+				"Content should extend to the top of the screen",
+				0,
+				((ViewGroup.MarginLayoutParams)root.getChildAt(0).getLayoutParams())
+						.topMargin);
+
+		Assert.assertEquals(
+				"Nothing should be drawn behind a hidden status bar",
+				0,
+				topScrim(root).getLayoutParams().height);
 	}
 }

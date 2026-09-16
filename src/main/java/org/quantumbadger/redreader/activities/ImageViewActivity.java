@@ -164,6 +164,11 @@ public class ImageViewActivity extends ViewsBaseActivity
 	}
 
 	@Override
+	protected boolean baseActivityContentExtendsBehindStatusBar() {
+		return true;
+	}
+
+	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
@@ -376,9 +381,9 @@ public class ImageViewActivity extends ViewsBaseActivity
 				mFloatingToolbar.setLayoutParams(toolBarParams);
 			}
 
-			// The image extends behind the navigation bar, so keep the
-			// toolbar clear of it
-			General.applyNavigationBarBottomMargin(mFloatingToolbar);
+			// The image extends behind the system bars, so keep the toolbar
+			// clear of them
+			General.applySystemBarMargin(mFloatingToolbar);
 
 			outerFrame.addView(mFloatingToolbar);
 
@@ -430,7 +435,13 @@ public class ImageViewActivity extends ViewsBaseActivity
 		setBaseActivityListing(outerFrame);
 	}
 
-	private void setMainView(final View v) {
+	/**
+	 * @param handlesSystemBarInsets Whether the view positions its own
+	 *                               contents clear of the system bars, which
+	 *                               it extends behind. Otherwise the view
+	 *                               itself is kept clear of them.
+	 */
+	private void setMainView(final View v, final boolean handlesSystemBarInsets) {
 
 		mLayout.removeAllViews();
 		mLayout.addView(v);
@@ -439,6 +450,10 @@ public class ImageViewActivity extends ViewsBaseActivity
 		mLayout.addView(mSwipeOverlay);
 
 		General.setLayoutMatchParent(v);
+
+		if(!handlesSystemBarInsets) {
+			General.applySystemBarMargin(v);
+		}
 	}
 
 	private void onImageStreamReady(
@@ -929,7 +944,7 @@ public class ImageViewActivity extends ViewsBaseActivity
 											error);
 									layout.addView(errorView);
 									General.setLayoutMatchWidthWrapHeight(errorView);
-									setMainView(layout);
+									setMainView(layout, false);
 								});
 							}
 						}
@@ -1017,7 +1032,7 @@ public class ImageViewActivity extends ViewsBaseActivity
 												error);
 										layout.addView(errorView);
 										General.setLayoutMatchWidthWrapHeight(errorView);
-										setMainView(layout);
+										setMainView(layout, false);
 									});
 								}
 							}
@@ -1148,7 +1163,7 @@ public class ImageViewActivity extends ViewsBaseActivity
 					0);
 
 			layout.addView(mVideoPlayerWrapper);
-			setMainView(layout);
+			setMainView(layout, true);
 
 			General.setLayoutMatchParent(layout);
 			General.setLayoutMatchParent(mVideoPlayerWrapper);
@@ -1245,7 +1260,7 @@ public class ImageViewActivity extends ViewsBaseActivity
 
 					final GIFView gifView = new GIFView(this, movie);
 
-					setMainView(gifView);
+					setMainView(gifView, false);
 
 					//noinspection ClickableViewAccessibility
 					gifView.setOnTouchListener(new BasicGestureHandler(this));
@@ -1291,7 +1306,7 @@ public class ImageViewActivity extends ViewsBaseActivity
 
 							imageView = new ImageView(ImageViewActivity.this);
 							imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-							setMainView(imageView);
+							setMainView(imageView, false);
 							gifThread.setView(imageView);
 
 							//noinspection ClickableViewAccessibility
@@ -1353,15 +1368,13 @@ public class ImageViewActivity extends ViewsBaseActivity
 			mImageViewDisplayerManager
 					= new ImageViewDisplayListManager(imageTileSource, this);
 			surfaceView = new RRGLSurfaceView(this, mImageViewDisplayerManager);
-			setMainView(surfaceView);
+			setMainView(surfaceView, true);
 
-			// The surface extends behind the navigation bar, so keep the
-			// scrollbars clear of it
+			// The surface extends behind the system bars, so keep the
+			// scrollbars and the fitted image clear of them
 			final ImageViewDisplayListManager displayListManager
 					= mImageViewDisplayerManager;
-			General.onNavigationBarBottomInset(
-					surfaceView,
-					displayListManager::setBottomInset);
+			General.onSystemBarInsets(surfaceView, displayListManager::setInsets);
 
 			if(mIsPaused) {
 				surfaceView.onPause();

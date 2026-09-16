@@ -115,8 +115,8 @@ public class ExoPlayerWrapperView extends FrameLayout {
 		addView(videoPlayerView);
 
 		// Fit (and zoom) the video within the area not covered by the
-		// navigation bar
-		General.applyNavigationBarBottomMargin(videoPlayerView);
+		// system bars
+		General.applySystemBarMargin(videoPlayerView);
 
 		videoPlayerView.setUseController(false);
 		videoPlayerView.setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS);
@@ -141,9 +141,9 @@ public class ExoPlayerWrapperView extends FrameLayout {
 			mControlView = new RelativeLayout(context);
 			addView(mControlView);
 
-			// The video extends behind the navigation bar, so keep the
-			// controls clear of it
-			General.applyNavigationBarBottomPadding(mControlView);
+			// The video extends behind the system bars, so keep the
+			// controls clear of them
+			General.applySystemBarPadding(mControlView);
 
 			final LinearLayout controlBar = new LinearLayout(context);
 			mControlView.addView(controlBar);

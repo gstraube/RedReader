@@ -1401,12 +1401,6 @@
 	<string name="error_inline_preview_failed_title">Download error</string>
 	<string name="error_inline_preview_failed_message">Could not download image preview.</string>
 
-	<string name="inline_preview_prompt_title">Image previews</string>
-	<string name="inline_preview_prompt_message">Continue showing inline image previews like the one above? You can change this at any time in the settings.</string>
-
-	<string name="inline_preview_prompt_turn_off">Turn off</string>
-	<string name="inline_preview_prompt_keep_showing">Keep showing</string>
-
 	<!-- 2020-11-27 -->
 
 	<string name="edittext_hint_comment_body_text">Comment text</string>

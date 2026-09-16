@@ -27,8 +27,6 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,7 +42,6 @@ import org.quantumbadger.redreader.common.AndroidCommon;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.PrefsUtility;
 import org.quantumbadger.redreader.common.RRError;
-import org.quantumbadger.redreader.common.SharedPrefsWrapper;
 import org.quantumbadger.redreader.fragments.PostListingFragment;
 import org.quantumbadger.redreader.reddit.api.RedditPostActions;
 import org.quantumbadger.redreader.reddit.prepared.InlinePreviewLoader;
@@ -53,15 +50,10 @@ import org.quantumbadger.redreader.views.liststatus.ErrorView;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class RedditPostView extends FlingableItemView
 		implements RedditPreparedPost.ThumbnailLoadedCallback,
 		InlinePreviewLoader.Listener {
-
-	private static final String PROMPT_PREF_KEY = "inline_image_prompt_accepted";
-
-	private static final AtomicInteger sInlinePreviewsShownThisSession = new AtomicInteger(0);
 
 	private final AccessibilityActionManager mAccessibilityActionManager;
 
@@ -82,12 +74,10 @@ public final class RedditPostView extends FlingableItemView
 	@NonNull private final ConstraintLayout mImagePreviewPlayOverlay;
 	@NonNull private final LinearLayout mImagePreviewOuter;
 	@NonNull private final LoadingSpinnerView mImagePreviewLoadingSpinner;
-	@NonNull private final LinearLayout mFooter;
 
 	private int mUsageId = 0;
 
 	@Nullable private InlinePreviewLoader mPreviewLoader = null;
-	private boolean mInlinePreviewCounted = false;
 
 	private final Handler thumbnailHandler;
 
@@ -213,8 +203,6 @@ public final class RedditPostView extends FlingableItemView
 		mImagePreviewOuter = Objects.requireNonNull(
 				rootView.findViewById(R.id.reddit_post_image_preview_outer));
 
-		mFooter = Objects.requireNonNull(
-				rootView.findViewById(R.id.reddit_post_footer));
 
 		mImagePreviewLoadingSpinner = new LoadingSpinnerView(activity);
 		mImagePreviewHolder.addView(mImagePreviewLoadingSpinner);
@@ -347,10 +335,8 @@ public final class RedditPostView extends FlingableItemView
 			mImagePreviewImageView.setImageBitmap(null);
 			mImagePreviewPlayOverlay.setVisibility(GONE);
 			mPostErrors.removeAllViews();
-			mFooter.removeAllViews();
 
 			mUsageId++;
-			mInlinePreviewCounted = false;
 
 			resetSwipeState();
 
@@ -557,8 +543,6 @@ public final class RedditPostView extends FlingableItemView
 					mImagePreviewPlayOverlay.setVisibility(VISIBLE);
 				}
 
-				onInlinePreviewShown();
-
 				break;
 
 			case FAILED:
@@ -590,65 +574,5 @@ public final class RedditPostView extends FlingableItemView
 
 				break;
 		}
-	}
-
-	private void onInlinePreviewShown() {
-
-		if(mInlinePreviewCounted) {
-			return;
-		}
-
-		mInlinePreviewCounted = true;
-
-		final int totalPreviewsShown = sInlinePreviewsShownThisSession.incrementAndGet();
-
-		final boolean alreadyAcceptedPrompt = General.getSharedPrefs(mActivity)
-				.getBoolean(PROMPT_PREF_KEY, false);
-
-		// Show every 8 previews, starting at the second one
-		if(totalPreviewsShown % 8 == 2 && !alreadyAcceptedPrompt) {
-			showPrefPrompt();
-		}
-	}
-
-	private void showPrefPrompt() {
-
-		final SharedPrefsWrapper sharedPrefs
-				= General.getSharedPrefs(mActivity);
-
-		LayoutInflater.from(mActivity).inflate(
-				R.layout.inline_images_question_view,
-				mFooter,
-				true);
-
-		final FrameLayout promptView
-				= mFooter.findViewById(R.id.inline_images_prompt_root);
-
-		final Button keepShowing
-				= mFooter.findViewById(R.id.inline_preview_prompt_keep_showing_button);
-
-		final Button turnOff
-				= mFooter.findViewById(R.id.inline_preview_prompt_turn_off_button);
-
-		keepShowing.setOnClickListener(v -> {
-
-			new RRAnimationShrinkHeight(promptView).start();
-
-			sharedPrefs.edit()
-					.putBoolean(PROMPT_PREF_KEY, true)
-					.apply();
-		});
-
-		turnOff.setOnClickListener(v -> {
-
-			final String prefPreview = mActivity.getApplicationContext()
-					.getString(
-							R.string.pref_images_inline_image_previews_key);
-
-			sharedPrefs.edit()
-					.putBoolean(PROMPT_PREF_KEY, true)
-					.putString(prefPreview, "never")
-					.apply();
-		});
 	}
 }

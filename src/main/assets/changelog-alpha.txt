@@ -1,5 +1,5 @@
 /Alpha 373 (2026-09-16)
-Show "Locked" tag for locked posts
+Show "Locked" tag for locked posts (thanks to folkemat)
 
 /Alpha 372 (2026-09-15)
 Inbox improvements and ability to mark messages as read

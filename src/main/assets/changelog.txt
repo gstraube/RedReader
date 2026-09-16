@@ -1,7 +1,7 @@
 119/1.27
 Inbox improvements and ability to mark messages as read
 Option to mark posts as read when scrolling past
-Show "Locked" tag for locked posts
+Show "Locked" tag for locked posts (thanks to folkemat)
 Accessibility announcements for collapsing/expanding comments, and voting (thanks to codeofdusk)
 Fix accessibility focus when moving between parent comments (thanks to codeofdusk)
 Fix custom accessibility actions intermittently disappearing from comments (thanks to codeofdusk)

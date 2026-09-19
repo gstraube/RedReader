@@ -140,6 +140,7 @@
     <!-- Main Menu -->
 
     <string name="mainmenu_frontpage">Front Page</string>
+	<string name="mainmenu_recently_viewed">Recently Viewed</string>
 	<string name="mainmenu_subscribed_posts">Subscribed Posts</string>
     <string name="mainmenu_all">All Posts</string>
     <string name="mainmenu_custom">Custom Subreddit</string>

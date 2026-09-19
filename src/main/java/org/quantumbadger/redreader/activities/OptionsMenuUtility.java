@@ -36,6 +36,7 @@ import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.PrefsUtility;
+import org.quantumbadger.redreader.common.RecentlyViewedPosts;
 import org.quantumbadger.redreader.common.SharedPrefsWrapper;
 import org.quantumbadger.redreader.common.StringUtils;
 import org.quantumbadger.redreader.common.UnexpectedInternalStateException;
@@ -449,6 +450,7 @@ public final class OptionsMenuUtility {
 				activity,
 				menu,
 				getOrThrow(appbarItemsPrefs, AppbarItemsPref.ACCOUNTS));
+		addRecentPosts(activity, menu);
 		add(
 				activity,
 				menu,
@@ -574,6 +576,30 @@ public final class OptionsMenuUtility {
 			final Menu menu,
 			final Option option) {
 		add(activity, menu, option, MenuItem.SHOW_AS_ACTION_NEVER, true);
+	}
+
+	private static void addRecentPosts(
+			final ViewsBaseActivity activity,
+			final Menu menu) {
+
+		final ArrayList<RecentlyViewedPosts.Item> recentPosts
+				= new ArrayList<>(RecentlyViewedPosts.get(activity));
+
+		if(recentPosts.isEmpty()) {
+			return;
+		}
+
+		menu.add(
+				Menu.NONE,
+				Menu.NONE,
+				Menu.NONE,
+				R.string.mainmenu_recently_viewed)
+				.setOnMenuItemClickListener(item -> {
+			final Intent intent = new Intent(activity, PostListingActivity.class);
+			intent.putExtra(PostListingActivity.EXTRA_RECENTLY_VIEWED, true);
+			activity.startActivity(intent);
+			return true;
+		});
 	}
 
 	private static void add(

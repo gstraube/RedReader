@@ -61,6 +61,7 @@ import org.quantumbadger.redreader.common.GenericFactory;
 import org.quantumbadger.redreader.common.LinkHandler;
 import org.quantumbadger.redreader.common.PrefsUtility;
 import org.quantumbadger.redreader.common.Priority;
+import org.quantumbadger.redreader.common.RecentlyViewedPosts;
 import org.quantumbadger.redreader.common.RRError;
 import org.quantumbadger.redreader.common.TimestampBound;
 import org.quantumbadger.redreader.common.UriString;
@@ -145,6 +146,7 @@ public class PostListingFragment extends RRFragment
 	private Integer mPreviousFirstVisibleItemPosition;
 
 	private final boolean mMarkPostsAsReadOnScroll;
+	private final boolean mRecentlyViewed;
 
 	// All items at positions below this have already been scrolled off the top
 	// of the screen, and any posts amongst them have been marked as read.
@@ -156,7 +158,8 @@ public class PostListingFragment extends RRFragment
 			final Bundle savedInstanceState,
 			final Uri url,
 			final UUID session,
-			final boolean forceDownload) {
+			final boolean forceDownload,
+			final boolean recentlyViewed) {
 
 		super(parent, savedInstanceState);
 
@@ -178,6 +181,7 @@ public class PostListingFragment extends RRFragment
 		}
 
 		mSession = session;
+		mRecentlyViewed = recentlyViewed;
 
 		final Context context = getContext();
 
@@ -274,6 +278,15 @@ public class PostListingFragment extends RRFragment
 
 		} else {
 			downloadStrategy = DownloadStrategyIfNotCached.INSTANCE;
+		}
+
+		if(mRecentlyViewed) {
+			setHeader(
+					getString(R.string.mainmenu_recently_viewed),
+					"",
+					null);
+			loadRecentPostsFromPreferences();
+			return;
 		}
 
 		mRequest = createPostListingRequest(
@@ -718,6 +731,47 @@ public class PostListingFragment extends RRFragment
 		} else {
 			layoutManager.scrollToPosition(layoutManager.getItemCount() - 1);
 		}
+	}
+
+	private void loadRecentPostsFromPreferences() {
+		final BaseActivity activity = (BaseActivity)getActivity();
+		final CacheManager cacheManager = CacheManager.getInstance(activity);
+		final TimestampUTC timestamp = TimestampUTC.now();
+		final ArrayList<RedditPostListItem> recentPosts = new ArrayList<>();
+		final boolean isNsfwAllowed = PrefsUtility.pref_behaviour_nsfw();
+		final boolean leftHandedMode = PrefsUtility.pref_appearance_left_handed();
+
+		for(final RecentlyViewedPosts.Item item : RecentlyViewedPosts.get(activity)) {
+			final RedditPost post = item.post;
+			if((post.getOver_18() && !isNsfwAllowed) || !mPostIds.add(post.getIdAlone())) {
+				continue;
+			}
+
+			final RedditParsedPost parsedPost = new RedditParsedPost(activity, post, false);
+			final RedditPreparedPost preparedPost = new RedditPreparedPost(
+					activity,
+					cacheManager,
+					mPostCount,
+					parsedPost,
+					timestamp,
+					true,
+					false,
+					false,
+					false);
+
+			recentPosts.add(new RedditPostListItem(
+					preparedPost,
+					this,
+					activity,
+					leftHandedMode));
+			mPostCount++;
+		}
+
+		mPostListingManager.addPosts(recentPosts);
+		mPostListingManager.setLoadingVisible(false);
+		mRequest = null;
+		mReadyToDownloadMore = false;
+		onPostsAdded();
 	}
 
 	@NonNull

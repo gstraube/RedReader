@@ -274,4 +274,5 @@ public class MainMenuFragment extends RRFragment implements
 	public void onUpdateAnnouncement() {
 		mManager.onUpdateAnnouncement();
 	}
+
 }

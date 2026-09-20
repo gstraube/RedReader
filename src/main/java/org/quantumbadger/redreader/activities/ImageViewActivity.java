@@ -66,7 +66,7 @@ import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.GenericFactory;
 import org.quantumbadger.redreader.common.LinkHandler;
 import org.quantumbadger.redreader.common.PrefsUtility;
-import org.quantumbadger.redreader.common.RecentlyViewedPosts;
+import org.quantumbadger.redreader.common.HistoryManager;
 import org.quantumbadger.redreader.common.Priority;
 import org.quantumbadger.redreader.common.RRError;
 import org.quantumbadger.redreader.common.UriString;
@@ -586,13 +586,13 @@ public class ImageViewActivity extends ViewsBaseActivity
 
 	@Override
 	public void onPostSelected(final RedditPreparedPost post) {
-		RecentlyViewedPosts.add(this, post);
+		HistoryManager.add(this, post);
 		LinkHandler.onLinkClicked(this, post.src.getUrl(), false, post.src.getSrc());
 	}
 
 	@Override
 	public void onPostCommentsSelected(final RedditPreparedPost post) {
-		RecentlyViewedPosts.add(this, post);
+		HistoryManager.add(this, post);
 		LinkHandler.onLinkClicked(
 				this,
 				new UriString(PostCommentListingURL.forPostId(post.src.getIdAlone())

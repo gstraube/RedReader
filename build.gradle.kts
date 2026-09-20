@@ -18,6 +18,8 @@ plugins {
 dependencies {
 	implementation(project(":redreader-common"))
 	implementation(project(":redreader-datamodel"))
+    implementation(libs.androidx.room3.common)
+	implementation(libs.androidx.room3.runtime)
 
 	coreLibraryDesugaring(libs.jdk.desugar)
 

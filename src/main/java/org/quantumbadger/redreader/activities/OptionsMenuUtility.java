@@ -36,7 +36,7 @@ import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.PrefsUtility;
-import org.quantumbadger.redreader.common.RecentlyViewedPosts;
+import org.quantumbadger.redreader.common.HistoryManager;
 import org.quantumbadger.redreader.common.SharedPrefsWrapper;
 import org.quantumbadger.redreader.common.StringUtils;
 import org.quantumbadger.redreader.common.UnexpectedInternalStateException;
@@ -45,6 +45,7 @@ import org.quantumbadger.redreader.reddit.PostCommentSort;
 import org.quantumbadger.redreader.reddit.PostSort;
 import org.quantumbadger.redreader.reddit.UserCommentSort;
 import org.quantumbadger.redreader.reddit.api.SubredditSubscriptionState;
+import org.quantumbadger.redreader.reddit.kthings.RedditPost;
 import org.quantumbadger.redreader.settings.SettingsActivity;
 import org.quantumbadger.redreader.settings.types.AppearanceTheme;
 
@@ -582,8 +583,8 @@ public final class OptionsMenuUtility {
 			final ViewsBaseActivity activity,
 			final Menu menu) {
 
-		final ArrayList<RecentlyViewedPosts.Item> recentPosts
-				= new ArrayList<>(RecentlyViewedPosts.get(activity));
+		final ArrayList<RedditPost> recentPosts
+				= new ArrayList<>(HistoryManager.get(activity));
 
 		if(recentPosts.isEmpty()) {
 			return;

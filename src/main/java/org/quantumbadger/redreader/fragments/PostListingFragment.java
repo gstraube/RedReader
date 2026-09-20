@@ -61,7 +61,7 @@ import org.quantumbadger.redreader.common.GenericFactory;
 import org.quantumbadger.redreader.common.LinkHandler;
 import org.quantumbadger.redreader.common.PrefsUtility;
 import org.quantumbadger.redreader.common.Priority;
-import org.quantumbadger.redreader.common.RecentlyViewedPosts;
+import org.quantumbadger.redreader.common.HistoryManager;
 import org.quantumbadger.redreader.common.RRError;
 import org.quantumbadger.redreader.common.TimestampBound;
 import org.quantumbadger.redreader.common.UriString;
@@ -741,9 +741,8 @@ public class PostListingFragment extends RRFragment
 		final boolean isNsfwAllowed = PrefsUtility.pref_behaviour_nsfw();
 		final boolean leftHandedMode = PrefsUtility.pref_appearance_left_handed();
 
-		for(final RecentlyViewedPosts.Item item : RecentlyViewedPosts.get(activity)) {
-			final RedditPost post = item.post;
-			if((post.getOver_18() && !isNsfwAllowed) || !mPostIds.add(post.getIdAlone())) {
+		for(final RedditPost post: HistoryManager.get(activity)) {
+			if ((post.getOver_18() && !isNsfwAllowed) || !mPostIds.add(post.getIdAlone())) {
 				continue;
 			}
 

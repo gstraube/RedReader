@@ -9,9 +9,12 @@ import org.quantumbadger.redreader.reddit.kthings.RedditPost
 @Dao
 interface HistoryDao {
 
-	@Query("SELECT * FROM history")
-	fun getRecentPosts(): MutableList<RedditPost>
+	@Query("SELECT * FROM history ORDER BY viewedAt DESC LIMIT 20")
+	fun getRecentPosts(): List<HistoryEntry>
 
 	@Insert(onConflict = REPLACE)
 	fun insert(historyEntry: HistoryEntry)
+
+	@Query("DELETE FROM history WHERE id NOT IN (SELECT id FROM history ORDER BY viewedAt DESC LIMIT 20)")
+	fun pruneToLimit()
 }

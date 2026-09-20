@@ -5,6 +5,7 @@ plugins {
 	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.kotlin.parcelize)
 	alias(libs.plugins.compose.compiler)
+	id("org.jetbrains.kotlin.kapt")
 	pmd
 	checkstyle
 
@@ -18,8 +19,9 @@ plugins {
 dependencies {
 	implementation(project(":redreader-common"))
 	implementation(project(":redreader-datamodel"))
-    implementation(libs.androidx.room3.common)
+	implementation(libs.androidx.room3.common)
 	implementation(libs.androidx.room3.runtime)
+	kapt(libs.androidx.room3.compiler)
 
 	coreLibraryDesugaring(libs.jdk.desugar)
 

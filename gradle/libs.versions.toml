@@ -91,6 +91,7 @@ androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-constraintlayout = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref="androidx-compose-constraintlayout" }
 androidx-room3-common = { group = "androidx.room3", name = "room3-common", version.ref = "room3-common" }
 androidx-room3-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room3-runtime" }
+androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room3-runtime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

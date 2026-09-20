@@ -17,37 +17,37 @@
 package org.quantumbadger.redreader.common
 
 import android.content.Context
-import android.os.Parcel
-import android.util.Base64
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.quantumbadger.redreader.history.HistoryDatabase
 import org.quantumbadger.redreader.history.HistoryEntry
 import org.quantumbadger.redreader.reddit.kthings.RedditPost
 import org.quantumbadger.redreader.reddit.prepared.RedditPreparedPost
+import java.util.concurrent.Executors
 
 object HistoryManager {
+	private val executor = Executors.newSingleThreadExecutor()
 
 	@JvmStatic
 	fun get(context: Context): MutableList<RedditPost> {
-		val historyDao = HistoryDatabase.getDatabase(context).historyDao()
-		return historyDao.getRecentPosts()
+		return executor.submit<List<HistoryEntry>> {
+			HistoryDatabase.getDatabase(context).historyDao().getRecentPosts()
+		}.get().map { entry ->
+			Json.decodeFromString<RedditPost>(entry.redditPostJson)
+		}.toMutableList()
 	}
 
 	@JvmStatic
-    fun add(
-        context: Context,
-        post: RedditPreparedPost
-    ) {
-		val historyDao = HistoryDatabase.getDatabase(context).historyDao()
-		historyDao.insert(HistoryEntry(post.src.idAlone, post.src.src))
-    }
-
-    private fun encodePost(post: RedditPost): String {
-        val parcel = Parcel.obtain()
-        try {
-            post.writeToParcel(parcel, 0)
-            return Base64.encodeToString(parcel.marshall(), Base64.NO_WRAP)
-        } finally {
-            parcel.recycle()
-        }
-    }
+	fun add(context: Context, post: RedditPreparedPost) {
+		executor.execute {
+			val historyDao = HistoryDatabase.getDatabase(context).historyDao()
+			val entry = HistoryEntry(
+				id = post.src.idAlone,
+				viewedAt = System.currentTimeMillis(),
+				redditPostJson = Json.encodeToString(post.src.src)
+			)
+			historyDao.insert(entry)
+			historyDao.pruneToLimit()
+		}
+	}
 }

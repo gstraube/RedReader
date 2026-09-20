@@ -38,6 +38,11 @@ public class PostListingController {
 
 	private UUID session = null;
 	private PostListingURL url;
+	private boolean recentlyViewed;
+
+	public void setRecentlyViewed(final boolean recentlyViewed) {
+		this.recentlyViewed = recentlyViewed;
+	}
 
 	public void setSession(final UUID session) {
 		this.session = session;
@@ -147,7 +152,8 @@ public class PostListingController {
 				savedInstanceState,
 				getUri(),
 				session,
-				force);
+				force,
+				recentlyViewed);
 	}
 
 	public final boolean isSubreddit() {

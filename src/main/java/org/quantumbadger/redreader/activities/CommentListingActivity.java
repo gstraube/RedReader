@@ -31,6 +31,7 @@ import org.quantumbadger.redreader.account.RedditAccountChangeListener;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.common.DialogUtils;
 import org.quantumbadger.redreader.common.LinkHandler;
+import org.quantumbadger.redreader.common.RecentlyViewedPosts;
 import org.quantumbadger.redreader.common.PrefsUtility;
 import org.quantumbadger.redreader.common.time.TimestampUTC;
 import org.quantumbadger.redreader.fragments.CommentListingFragment;
@@ -257,11 +258,13 @@ public class CommentListingActivity extends RefreshableActivity
 
 	@Override
 	public void onPostSelected(final RedditPreparedPost post) {
+		RecentlyViewedPosts.add(this, post);
 		LinkHandler.onLinkClicked(this, post.src.getUrl(), false, post.src.getSrc());
 	}
 
 	@Override
 	public void onPostCommentsSelected(final RedditPreparedPost post) {
+		RecentlyViewedPosts.add(this, post);
 		LinkHandler.onLinkClicked(
 				this,
 				PostCommentListingURL.forPostId(post.src.getIdAlone()).toUriString(),

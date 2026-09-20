@@ -36,6 +36,7 @@ import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.common.DialogUtils;
 import org.quantumbadger.redreader.common.LinkHandler;
 import org.quantumbadger.redreader.common.PrefsUtility;
+import org.quantumbadger.redreader.common.RecentlyViewedPosts;
 import org.quantumbadger.redreader.common.time.TimestampUTC;
 import org.quantumbadger.redreader.fragments.PostListingFragment;
 import org.quantumbadger.redreader.fragments.SessionListDialog;
@@ -50,6 +51,7 @@ import org.quantumbadger.redreader.reddit.url.PostCommentListingURL;
 import org.quantumbadger.redreader.reddit.url.PostListingURL;
 import org.quantumbadger.redreader.reddit.url.RedditURLParser;
 import org.quantumbadger.redreader.reddit.url.SearchPostListURL;
+import org.quantumbadger.redreader.reddit.url.SubredditPostListURL;
 import org.quantumbadger.redreader.views.RedditPostView;
 
 import java.util.Locale;
@@ -66,6 +68,7 @@ public class PostListingActivity extends RefreshableActivity
 	private static final String SAVEDSTATE_SESSION = "pla_session";
 	private static final String SAVEDSTATE_SORT = "pla_sort";
 	private static final String SAVEDSTATE_FRAGMENT = "pla_fragment";
+	public static final String EXTRA_RECENTLY_VIEWED = "recentlyViewed";
 
 	private PostListingFragment fragment;
 	private PostListingController controller;
@@ -99,8 +102,10 @@ public class PostListingActivity extends RefreshableActivity
 
 			final Intent intent = getIntent();
 
-			final RedditURLParser.RedditURL url
-					= RedditURLParser.parseProbablePostListing(intent.getData());
+			final boolean recentlyViewed = intent.getBooleanExtra(EXTRA_RECENTLY_VIEWED, false);
+			final RedditURLParser.RedditURL url = recentlyViewed
+					? SubredditPostListURL.getFrontPage()
+					: RedditURLParser.parseProbablePostListing(intent.getData());
 
 			if(!(url instanceof PostListingURL)) {
 				throw new RuntimeException(String.format(
@@ -110,6 +115,7 @@ public class PostListingActivity extends RefreshableActivity
 			}
 
 			controller = new PostListingController((PostListingURL)url, this);
+			controller.setRecentlyViewed(recentlyViewed);
 
 			Bundle fragmentSavedInstanceState = null;
 
@@ -131,7 +137,9 @@ public class PostListingActivity extends RefreshableActivity
 				}
 			}
 
-			setTitle(url.humanReadableName(this, false));
+			setTitle(recentlyViewed
+					? getString(R.string.mainmenu_recently_viewed)
+					: url.humanReadableName(this, false));
 
 			setBaseActivityListing(R.layout.main_single);
 			doRefresh(RefreshableFragment.POSTS, false, fragmentSavedInstanceState);
@@ -282,11 +290,13 @@ public class PostListingActivity extends RefreshableActivity
 
 	@Override
 	public void onPostSelected(final RedditPreparedPost post) {
+		RecentlyViewedPosts.add(this, post);
 		LinkHandler.onLinkClicked(this, post.src.getUrl(), false, post.src.getSrc());
 	}
 
 	@Override
 	public void onPostCommentsSelected(final RedditPreparedPost post) {
+		RecentlyViewedPosts.add(this, post);
 		LinkHandler.onLinkClicked(
 				this,
 				PostCommentListingURL.forPostId(post.src.getIdAlone()).toUriString(),

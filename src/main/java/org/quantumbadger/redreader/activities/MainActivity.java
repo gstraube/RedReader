@@ -54,6 +54,7 @@ import org.quantumbadger.redreader.common.FeatureFlagHandler;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.LinkHandler;
 import org.quantumbadger.redreader.common.PrefsUtility;
+import org.quantumbadger.redreader.common.RecentlyViewedPosts;
 import org.quantumbadger.redreader.common.SharedPrefsWrapper;
 import org.quantumbadger.redreader.common.UriString;
 import org.quantumbadger.redreader.common.collections.CollectionStream;
@@ -761,6 +762,7 @@ public class MainActivity extends RefreshableActivity
 
 	@Override
 	public void onPostSelected(final RedditPreparedPost post) {
+		RecentlyViewedPosts.add(this, post);
 		if(post.isSelf()) {
 			onPostCommentsSelected(post);
 		} else {

@@ -451,6 +451,7 @@ public class MainMenuListingManager {
 				mAdapter.appendToGroup(GROUP_SUBREDDITS_ITEMS, subredditsLoadingItem);
 			}
 		}
+
 	}
 
 	private void setPinnedSubreddits() {
